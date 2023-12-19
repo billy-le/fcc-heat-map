@@ -12,8 +12,26 @@
     <script type="module" src="/src/main.ts"></script>
   </head>
   <body>
-    <h1 id="title">Monthly Global Land-Surface Temperature</h1>
-    <p id="description">From year 1735 - 2015</p>
-    <div id="app"></div>
+    <h1 id="title" style="text-align: center">
+      Monthly Global Land-Surface Temperature
+    </h1>
+    <h3 id="description" style="text-align: center">From year 1735 - 2015</h3>
+    <div style="position: relative; display: flex; gap: 3rem">
+      <div id="app"></div>
+      <div
+        id="tooltip"
+        style="
+          position: absolute;
+          display: none;
+          padding: 10px;
+          border: 1px solid black;
+          border-radius: 8px;
+          max-width: fit-content;
+          max-height: min-content;
+          margin: 0 auto;
+          background-color: white;
+        "
+      ></div>
+    </div>
   </body>
 </html>
