@@ -12,7 +12,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-
+    "noEmitOnError": true,
+    
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

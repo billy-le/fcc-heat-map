@@ -17,12 +17,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   const height = window.innerHeight - margin.top - margin.bottom;
   const width = window.innerWidth - margin.left - margin.right;
 
-  const data = await d3.json<{
-    baseTemperature: number;
-    monthlyVariance: Array<MonthYearVariance>;
-  }>(
-    "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json"
-  );
+  const data = await d3
+    .json<{
+      baseTemperature: number;
+      monthlyVariance: Array<MonthYearVariance>;
+    }>(
+      "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json"
+    )
+    .then((res) => {
+      if (!res)
+        return {
+          baseTemperature: 0,
+          monthlyVariance: [],
+        };
+      return res;
+    });
 
   const monthlyVariance = data?.monthlyVariance;
   const yearMax = +(d3.max(monthlyVariance, (d) => d.year) ?? 0) + 1;
@@ -77,13 +86,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   var tooltip = d3.select("#tooltip");
 
-  function mouseOver(pointer, d) {
+  function mouseOver() {
     tooltip.style("display", "block");
 
     d3.select(this).style("stroke", "black").style("opacity", 0.5);
   }
 
-  function mouseMove(pointer, d) {
+  function mouseMove(
+    pointer: d3.ClientPointEvent & { layerX: number; layerY: number },
+    d: MonthYearVariance
+  ) {
     const month = new Intl.DateTimeFormat("en", { month: "long" }).format(
       new Date(0, d.month - 1)
     );
@@ -92,23 +104,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       .style("top", `${pointer.layerY - 50}px`)
       .style("left", `${pointer.layerX + 20}px`)
       .attr("data-year", d.year).html(`
-      <div>Global Avg Temp: ${data?.baseTemperature}&deg;C</div>
+      <div>Global Avg Temp: ${data.baseTemperature}&deg;C</div>
       <div>${month}, ${d.year}</div>
-      <div>Temp: ${(data?.baseTemperature + d.variance).toFixed(2)}&deg;C</div>
+      <div>Temp: ${(data!.baseTemperature + d.variance).toFixed(2)}&deg;C</div>
       <div>Variance: ${d.variance}&deg;C</div>
       `);
 
     d3.select(this).style("stroke", "black").style("opacity", 0.5);
   }
 
-  function mouseLeave(pointer, d) {
+  function mouseLeave() {
     tooltip.style("display", "none");
     d3.select(this).style("stroke", "none").style("opacity", 1);
   }
 
   svg
     .selectAll("rect")
-    .data(monthlyVariance)
+    .data(monthlyVariance!)
     .enter()
     .append("rect")
     .attr("class", "cell")
@@ -124,7 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     .attr("fill", (d) => colors(d.variance))
     .attr("data-month", (d) => d.month - 1)
     .attr("data-year", (d) => d.year)
-    .attr("data-temp", (d) => data?.baseTemperature + d.variance)
+    .attr("data-temp", (d) => data.baseTemperature + d.variance)
     .on("mouseover", mouseOver)
     .on("mouseleave", mouseLeave)
     .on("mousemove", mouseMove);
@@ -140,7 +152,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     .domain(colors.domain())
     .range([margin.left, width - margin.right]);
 
-  const legendAxisBottom = (g) =>
+  const legendAxisBottom = (g: any) =>
     g.attr("transform", `translate(0,${height - margin.bottom / 2 + 10})`).call(
       d3
         .axisBottom(legendAxis)
